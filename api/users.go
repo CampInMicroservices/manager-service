@@ -17,7 +17,10 @@ type getUserListRequest struct {
 }
 
 type createUserRequest struct {
-	Name string `json:"name" binding:"required"`
+	Name      string `json:"name" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Password  string `json:"password" binding:"required"`
+	Activated *bool  `json:"activated" binding:"required"`
 }
 
 func (server *Server) GetUserByID(ctx *gin.Context) {
@@ -52,7 +55,10 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 	}
 
 	arg := db.CreateUserParam{
-		Name: req.Name,
+		Name:      req.Name,
+		Email:     req.Email,
+		Password:  req.Password,
+		Activated: *req.Activated,
 	}
 
 	// Execute query.
