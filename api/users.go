@@ -44,6 +44,32 @@ func (server *Server) GetUserByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
+func (server *Server) GetAllUsers(ctx *gin.Context) {
+
+	// Check if request has parameters offset and limit for pagination.
+	var req getUserListRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": err})
+		ctx.Abort()
+		return
+	}
+
+	arg := db.ListUserParam{
+		Offset: req.Offset,
+		Limit:  req.Limit,
+	}
+
+	// Execute query.
+	result, err := server.store.GetAllUsers(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err})
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, result)
+}
+
 func (server *Server) CreateUser(ctx *gin.Context) {
 
 	// Check if request has all required fields in json body.

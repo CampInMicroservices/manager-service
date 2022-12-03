@@ -29,6 +29,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	v1 := router.Group("v1")
 	{
 		v1.GET("/users/:id", server.GetUserByID)
+		v1.GET("/users", server.GetAllUsers)
 		v1.POST("/users", server.CreateUser)
 	}
 

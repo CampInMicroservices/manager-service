@@ -41,6 +41,15 @@ func (store *Store) GetUserByID(ctx context.Context, id int64) (user User, err e
 	return
 }
 
+func (store *Store) GetAllUsers(ctx context.Context, arg ListUserParam) (users []User, err error) {
+
+	const query = `SELECT * FROM "users" OFFSET $1 LIMIT $2`
+	users = []User{}
+	err = store.db.SelectContext(ctx, &users, query, arg.Offset, arg.Limit)
+
+	return
+}
+
 func (store *Store) CreateUser(ctx context.Context, arg CreateUserParam) (User, error) {
 
 	const query = `
