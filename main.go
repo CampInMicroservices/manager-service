@@ -1,14 +1,19 @@
 package main
 
 import (
+	"context"
 	"log"
 	"manager-service/api"
 	"manager-service/config"
 	"manager-service/db"
+	"manager-service/proto"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -28,8 +33,21 @@ func main() {
 	// Run DB migration
 	runDBMigration(config.MigrationURL, config.DBSource)
 
+	// gRPC timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+
+	// Open connection to gRPC
+	conn, err := grpc.DialContext(ctx, config.AuthServiceGRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal("Failed to dial gRPC server: ", err)
+	}
+	defer conn.Close()
+
+	grpcClient := proto.NewAuthServiceClient(conn)
+
 	// Create a server and setup routes
-	server, err := api.NewServer(config, store)
+	server, err := api.NewServer(config, store, grpcClient)
 	if err != nil {
 		log.Fatal("Failed to create a server: ", err)
 	}

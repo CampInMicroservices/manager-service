@@ -1,10 +1,15 @@
 package api
 
 import (
+	"context"
+	"log"
 	"manager-service/db"
+	"manager-service/proto"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type getUserRequest struct {
@@ -21,6 +26,11 @@ type createUserRequest struct {
 	Email     string `json:"email" binding:"required"`
 	Password  string `json:"password" binding:"required"`
 	Activated *bool  `json:"activated" binding:"required"`
+}
+
+type LoginParam struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func (server *Server) GetUserByID(ctx *gin.Context) {
@@ -96,4 +106,41 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, result)
+}
+
+func (server *Server) LoginUser(ctx *gin.Context) {
+
+	// Check if request has all required fields in json body.
+	var req LoginParam
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": err})
+		ctx.Abort()
+		return
+	}
+
+	authRequest := &proto.AuthRequest{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	// Create new payment via gRPC
+	authResponse, err := server.grpcClient.Login(context.Background(), authRequest)
+
+	if err != nil {
+
+		st, _ := status.FromError(err)
+
+		if st.Code() == codes.NotFound {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized!"})
+			ctx.Abort()
+			return
+		}
+
+		log.Println("Auth service not reachable.")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Auth service unavailable."})
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, authResponse)
 }

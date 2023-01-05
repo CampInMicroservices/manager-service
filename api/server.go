@@ -3,26 +3,29 @@ package api
 import (
 	"manager-service/config"
 	"manager-service/db"
+	"manager-service/proto"
 
 	"github.com/gin-gonic/gin"
 )
 
 // Server serves HTTP requests for our banking service
 type Server struct {
-	config config.Config
-	store  *db.Store
-	router *gin.Engine
+	config     config.Config
+	store      *db.Store
+	grpcClient proto.AuthServiceClient
+	router     *gin.Engine
 }
 
 // NewServer creates a new HTTP server and set up routing
-func NewServer(config config.Config, store *db.Store) (*Server, error) {
+func NewServer(config config.Config, store *db.Store, grpcClient proto.AuthServiceClient) (*Server, error) {
 
 	gin.SetMode(config.GinMode)
 	router := gin.Default()
 
 	server := &Server{
-		config: config,
-		store:  store,
+		config:     config,
+		store:      store,
+		grpcClient: grpcClient,
 	}
 
 	// Setup routing for server
@@ -31,6 +34,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 		v1.GET("/users/:id", server.GetUserByID)
 		v1.GET("/users", server.GetAllUsers)
 		v1.POST("/users", server.CreateUser)
+		v1.POST("/login", server.LoginUser)
 	}
 
 	// Setup health check routes
