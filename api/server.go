@@ -1,8 +1,11 @@
 package api
 
 import (
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"manager-service/config"
 	"manager-service/db"
+	docs "manager-service/docs"
 	"manager-service/proto"
 
 	"github.com/gin-gonic/gin"
@@ -43,6 +46,9 @@ func NewServer(config config.Config, store *db.Store, grpcClient proto.AuthServi
 		health.GET("/live", server.Live)
 		health.GET("/ready", server.Ready)
 	}
+
+	docs.SwaggerInfo.BasePath = "/manager-service"
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// TODO: Setup metrics routes
 

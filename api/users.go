@@ -33,6 +33,18 @@ type LoginParam struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// @BasePath /manager-service/v1
+
+// User godoc
+// @Summary Users by ID
+// @Schemes
+// @Description Returns user by ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {array} db.User
+// @Router /v1/users/{id} [get]
 func (server *Server) GetUserByID(ctx *gin.Context) {
 
 	// Check if request has ID field in URI.
@@ -54,6 +66,19 @@ func (server *Server) GetUserByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
+// @BasePath /manager-service/v1
+
+// User godoc
+// @Summary Users list
+// @Schemes
+// @Description Returns user by ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param limit query int true "Limit"
+// @Param offset query int true "Offset"
+// @Success 200 {array} db.User
+// @Router /v1/users [get]
 func (server *Server) GetAllUsers(ctx *gin.Context) {
 
 	// Check if request has parameters offset and limit for pagination.
@@ -80,6 +105,18 @@ func (server *Server) GetAllUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
+// @BasePath /manager-service/v1
+
+// User godoc
+// @Summary Users create
+// @Schemes
+// @Description Creates a user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param request body db.User true "User"
+// @Success 200 {array} db.User
+// @Router /v1/users [post]
 func (server *Server) CreateUser(ctx *gin.Context) {
 
 	// Check if request has all required fields in json body.
@@ -108,6 +145,18 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, result)
 }
 
+// @BasePath /manager-service/v1
+
+// Login godoc
+// @Summary User Login
+// @Schemes
+// @Description Login for a user
+// @Tags Login
+// @Accept json
+// @Produce json
+// @Param request body api.LoginParam true "Login data"
+// @Success 200 {array} proto.AuthResponse
+// @Router /v1/login [post]
 func (server *Server) LoginUser(ctx *gin.Context) {
 
 	// Check if request has all required fields in json body.
